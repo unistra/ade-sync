@@ -10,19 +10,24 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.UUID;
 
 
 public class Sync {
     private long start;
+    private long previousRun;
     private JSONObject config;
     private AdeApi6 api;
+    private SimpleDateFormat sdf;
 
     public Sync(JSONObject config) {
         this.config = config;
         initAde();
+        sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     }
 
     private void initAde(){
@@ -38,15 +43,15 @@ public class Sync {
 
     public void run() {
         try {
-            start = Calendar.getInstance().getTimeInMillis();
+            start = new GregorianCalendar().getTimeInMillis();
             JSONObject doc = checkUpdates(api);
             setLastRun();
             System.out.println(doc);
         } catch (RemoteException | ProjectNotFoundException e) {
             System.out.println("Error with ADE");
             e.printStackTrace();
-        } catch (FileNotFoundException e){
-            System.out.println("Error writing run log");
+        } catch (IOException e){
+            System.out.println("Error withs run log");
             e.printStackTrace();
         }
     }
@@ -60,22 +65,28 @@ public class Sync {
     private long getLastRun() throws IOException {
         String filePath = getOutputFile();
         File f = new File(filePath);
+        GregorianCalendar gc = new GregorianCalendar();
         if ((!f.exists()) || (!f.canRead())) {
-            throw new Error("Cannot access run file " + filePath); //$NON-NLS-1$
+            // Arbitrary run last 72 hours changes
+            gc.add(GregorianCalendar.HOUR, -72);
+            System.out.println("No previous run found, will fetch updates since " +
+                    sdf.format(gc.getTime()));
+            return gc.getTimeInMillis();
         }
-        return Long.parseLong(new String(Files.readAllBytes(Paths.get(filePath))));
+        long last = Long.parseLong(new String(Files.readAllBytes(Paths.get(filePath))));
+        gc.setTimeInMillis(last);
+        System.out.println("Will fetch updates since " +
+                sdf.format(gc.getTime()));
+        return last;
     }
 
-    private JSONObject checkUpdates(AdeApi6 api) throws RemoteException, ProjectNotFoundException {
+    private JSONObject checkUpdates(AdeApi6 api) throws RemoteException, ProjectNotFoundException, IOException {
         JSONObject doc = new JSONObject();
         UUID uuid = UUID.randomUUID();
         doc.put("operation_id", uuid.toString());
 
         FiltersEvents fe = new FiltersEvents();
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 18);
-        cal.set(Calendar.MINUTE, 0);
-        fe.addFilterUpdatedStart(cal.getTimeInMillis());
+        fe.addFilterUpdatedStart(getLastRun());
         List<Element> events = api.getEvents(fe, 8).getChildren();
         for (Element event : events) {
             JSONObject j_event = new JSONObject();
