@@ -3,6 +3,8 @@ package fr.unistra.dnum.ade;
 import com.adesoft.beans.AdeApi6;
 import org.apache.commons.cli.*;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +13,8 @@ import java.nio.file.Paths;
 
 public class Main {
     private static final String OPTION_CONFIG = "c"; //$NON-NLS-1$
+
+    public static Logger logger = LoggerFactory.getLogger("main"); //$NON-NLS-1$
 
     public static void main(String[] args) {
         CommandLineParser parser = new PosixParser();
@@ -26,7 +30,7 @@ public class Main {
                 configPath = line.getOptionValue(OPTION_CONFIG);
 
                 File f = new File(configPath);
-                System.out.println("Using configuration from " + f.getAbsolutePath());
+                logger.info("Using configuration from " + f.getAbsolutePath());
                 if ((!f.exists()) || (!f.canRead())) {
                     throw new Error("Cannot access file " + configPath); //$NON-NLS-1$
                 }

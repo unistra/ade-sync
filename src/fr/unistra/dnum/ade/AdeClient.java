@@ -5,6 +5,8 @@ import com.adesoft.beans.filters.FiltersEvents;
 import com.adesoft.errors.ProjectNotFoundException;
 import org.jdom.Element;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -14,6 +16,8 @@ import java.util.UUID;
 public class AdeClient {
     private JSONObject adeConf;
     private AdeApi6 api;
+
+    public static Logger logger = LoggerFactory.getLogger("ade"); //$NON-NLS-1$
 
     public AdeClient(JSONObject adeConf) {
         this.adeConf = adeConf;
@@ -37,6 +41,7 @@ public class AdeClient {
         FiltersEvents fe = new FiltersEvents();
         fe.addFilterUpdatedStart(lastRun);
         List<Element> events = api.getEvents(fe, 8).getChildren();
+        int nb_events = events.size();
         for (Element event : events) {
             JSONObject j_event = new JSONObject();
             j_event.put("id", event.getString("id"));
@@ -51,6 +56,7 @@ public class AdeClient {
             }
             doc.append("events", j_event);
         }
+        logger.info("Found " + nb_events + " updated events");
         return doc;
     }
 }
