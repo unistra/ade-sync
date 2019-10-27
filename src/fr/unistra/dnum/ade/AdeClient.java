@@ -25,7 +25,7 @@ public class AdeClient {
     }
 
     private void initAde(){
-        api = new com.adesoft.beans.AdeApi6();
+        api = new AdeApi6();
         api.setServer(adeConf.getString("server"));
         api.setServerPort(adeConf.getInt("port"));
         api.setLogin(adeConf.getString("username"));

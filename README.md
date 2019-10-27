@@ -46,4 +46,4 @@ Build with *maven*
 ## Run
 You can run script with :
 
-    java -jar ade-sync.jar -c config_file.json
+    java -Djdk.crypto.KeyAgreement.legacyKDF=true -jar ade-sync.jar -c config_file.json
