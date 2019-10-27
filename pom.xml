@@ -43,7 +43,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>fr.unistra.dnum.ade.Sync</mainClass>
+                            <mainClass>fr.unistra.dnum.ade.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
