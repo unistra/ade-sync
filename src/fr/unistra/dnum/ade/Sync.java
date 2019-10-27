@@ -6,8 +6,12 @@ import com.adesoft.errors.ProjectNotFoundException;
 import org.jdom.Element;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.rmi.RemoteException;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,14 +24,14 @@ public class Sync {
         doc.put("operation_id", uuid.toString());
 
         try {
+            Calendar start = Calendar.getInstance();
             FiltersEvents fe = new FiltersEvents();
             Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.HOUR_OF_DAY, 16);
-            cal.set(Calendar.MINUTE, 0); // date à partir de laquelle tu veux les modifs
+            cal.set(Calendar.HOUR_OF_DAY, 18);
+            cal.set(Calendar.MINUTE, 0);
             fe.addFilterUpdatedStart(cal.getTimeInMillis());
-            Element events = api.getEvents(fe, 8); // niveau de détail 1 doit suffire si besoin que de l'id.
-            List<Element> liste = events.getChildren();
-            for(Element event : liste) {
+            List<Element> events = api.getEvents(fe, 8).getChildren();
+            for(Element event : events) {
                 JSONObject j_event = new JSONObject();
                 j_event.put("id", event.getString("id"));
                 for (Object c : event.getContent()) {
@@ -41,9 +45,12 @@ public class Sync {
                 }
                 doc.append("events", j_event);
             }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (ProjectNotFoundException e) {
+
+            FileOutputStream fos = new FileOutputStream("/tmp/ade-sync.txt");
+            PrintWriter pw = new PrintWriter("ade-sync.txt");
+            pw.print("" + start.getTimeInMillis());
+            pw.close();
+        } catch (RemoteException | ProjectNotFoundException | FileNotFoundException e) {
             e.printStackTrace();
         }
 

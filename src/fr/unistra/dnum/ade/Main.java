@@ -5,7 +5,6 @@ import org.apache.commons.cli.*;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -44,7 +43,7 @@ public class Main {
                 api.setProjectId(adeConf.getInt("project_id"));
 
                 JSONObject result = Sync.run(api);
-                System.out.println(result.toString());
+                System.out.println(result);
 
             } else {
                 String header = "Syncs updates from ADE\n\n"; //$NON-NLS-1$
