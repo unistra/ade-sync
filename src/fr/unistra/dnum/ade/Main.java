@@ -33,17 +33,8 @@ public class Main {
 
                 JSONObject conf = new JSONObject(new String(Files.readAllBytes(Paths.get(f.getAbsolutePath()))));
 
-                JSONObject adeConf = conf.getJSONObject("ade");
-
-                AdeApi6 api = new com.adesoft.beans.AdeApi6();
-                api.setServer(adeConf.getString("server"));
-                api.setServerPort(adeConf.getInt("port"));
-                api.setLogin(adeConf.getString("username"));
-                api.setPassword(adeConf.getString("password"));
-                api.setProjectId(adeConf.getInt("project_id"));
-
-                JSONObject result = Sync.run(api);
-                System.out.println(result);
+                Sync sync = new Sync(conf);
+                sync.run();
 
             } else {
                 String header = "Syncs updates from ADE\n\n"; //$NON-NLS-1$
