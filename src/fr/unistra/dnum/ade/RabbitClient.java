@@ -34,7 +34,8 @@ public class RabbitClient {
         if(connection == null)
             connection = factory.newConnection();
         Channel channel = connection.createChannel();
-        channel.queueDeclare(queue, false, false, false, null);
+        // Queue is declared by Python client
+        // channel.queueDeclare(queue, false, true, false, null);
         channel.basicPublish("", queue, null, message.getBytes());
         logger.info("Sent message to " + queue);
     }
