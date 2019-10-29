@@ -57,6 +57,7 @@ public class AdeClient {
             doc.append("events", j_event);
         }
         logger.info("Found " + nb_events + " updated events");
+        if(nb_events == 0) return null;
         return doc;
     }
 }
