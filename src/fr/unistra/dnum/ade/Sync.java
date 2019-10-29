@@ -35,9 +35,12 @@ public class Sync {
             start = new GregorianCalendar().getTimeInMillis();
             AdeClient ade = new AdeClient(config.getJSONObject("ade"));
             JSONObject doc = ade.checkUpdates(getLastRun());
-            RabbitClient rabbit = new RabbitClient(config.getJSONObject("rabbitmq"));
-            rabbit.send(doc);
-            rabbit.close();
+            if (doc != null)
+            {
+                RabbitClient rabbit = new RabbitClient(config.getJSONObject("rabbitmq"));
+                rabbit.send(doc);
+                rabbit.close();
+            }
             setLastRun();
             logger.info("Successful check");
         } catch (RemoteException | ProjectNotFoundException e) {
