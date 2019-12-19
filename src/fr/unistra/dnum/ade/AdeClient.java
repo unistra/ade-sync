@@ -10,12 +10,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 public class AdeClient {
     private JSONObject adeConf;
     private AdeApi6 api;
+    private static ArrayList<String> categories = new ArrayList<String>(Arrays.asList("trainee", "category5", "classroom", "instructor"));
 
     public static Logger logger = LoggerFactory.getLogger("ade"); //$NON-NLS-1$
 
@@ -24,7 +27,7 @@ public class AdeClient {
         initAde();
     }
 
-    private void initAde(){
+    private void initAde() {
         api = new AdeApi6();
         api.setServer(adeConf.getString("server"));
         api.setServerPort(adeConf.getInt("port"));
@@ -50,14 +53,17 @@ public class AdeClient {
                 if (content.getName().equals("resources")) {
                     for (Object r : content.getContent()) {
                         Element resource = (Element) r;
-                        j_event.append("resources", resource.getInt("id"));
+                        String category = ((Element) r).getString("category");
+                        // ONly selected categories
+                        if (categories.contains(category))
+                            j_event.append("resources", resource.getInt("id"));
                     }
                 }
             }
             doc.append("events", j_event);
         }
         logger.info("Found " + nb_events + " updated events");
-        if(nb_events == 0) return null;
+        if (nb_events == 0) return null;
         return doc;
     }
 }

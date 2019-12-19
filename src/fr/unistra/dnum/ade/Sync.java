@@ -68,7 +68,7 @@ public class Sync {
         GregorianCalendar gc = new GregorianCalendar();
         if ((!f.exists()) || (!f.canRead())) {
             // Arbitrary run last 72 hours changes
-            gc.add(GregorianCalendar.HOUR, -72);
+            gc.add(GregorianCalendar.HOUR, -3);
             logger.warn("No previous run found, will fetch updates since " +
                     sdf.format(gc.getTime()));
             getLastRun = gc.getTimeInMillis();
