@@ -3,15 +3,18 @@ package fr.unistra.dnum.ade;
 import com.adesoft.beans.AdeApi6;
 import org.apache.commons.cli.*;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class Main {
     private static final String OPTION_CONFIG = "c"; //$NON-NLS-1$
+
+    public static Logger logger = LoggerFactory.getLogger("main"); //$NON-NLS-1$
 
     public static void main(String[] args) {
         CommandLineParser parser = new PosixParser();
@@ -27,24 +30,15 @@ public class Main {
                 configPath = line.getOptionValue(OPTION_CONFIG);
 
                 File f = new File(configPath);
-                System.out.println("Using configuration from " + f.getAbsolutePath());
+                logger.info("Using configuration from " + f.getAbsolutePath());
                 if ((!f.exists()) || (!f.canRead())) {
                     throw new Error("Cannot access file " + configPath); //$NON-NLS-1$
                 }
 
                 JSONObject conf = new JSONObject(new String(Files.readAllBytes(Paths.get(f.getAbsolutePath()))));
 
-                JSONObject adeConf = conf.getJSONObject("ade");
-
-                AdeApi6 api = new com.adesoft.beans.AdeApi6();
-                api.setServer(adeConf.getString("server"));
-                api.setServerPort(adeConf.getInt("port"));
-                api.setLogin(adeConf.getString("username"));
-                api.setPassword(adeConf.getString("password"));
-                api.setProjectId(adeConf.getInt("project_id"));
-
-                JSONObject result = Sync.run(api);
-                System.out.println(result.toString());
+                Sync sync = new Sync(conf);
+                sync.run();
 
             } else {
                 String header = "Syncs updates from ADE\n\n"; //$NON-NLS-1$

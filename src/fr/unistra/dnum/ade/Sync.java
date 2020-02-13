@@ -1,53 +1,89 @@
 package fr.unistra.dnum.ade;
 
-import com.adesoft.beans.AdeApi6;
-import com.adesoft.beans.filters.FiltersEvents;
 import com.adesoft.errors.ProjectNotFoundException;
-import org.jdom.Element;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
-import java.util.Calendar;
-import java.util.List;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
+import java.util.concurrent.TimeoutException;
 
 
 public class Sync {
-    public static JSONObject run(AdeApi6 api) {
-        JSONObject doc = new JSONObject();
-        UUID uuid = UUID.randomUUID();
+    private long start;
+    private long getLastRun;
+    private JSONObject config;
+    private SimpleDateFormat sdf;
 
-        doc.put("operation_id", uuid.toString());
+    public static Logger logger = LoggerFactory.getLogger("sync"); //$NON-NLS-1$
 
+    public Sync(JSONObject config) {
+        this.config = config;
+        sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    }
+
+    public void run() {
         try {
-            FiltersEvents fe = new FiltersEvents();
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.HOUR_OF_DAY, 16);
-            cal.set(Calendar.MINUTE, 0); // date à partir de laquelle tu veux les modifs
-            fe.addFilterUpdatedStart(cal.getTimeInMillis());
-            Element events = api.getEvents(fe, 8); // niveau de détail 1 doit suffire si besoin que de l'id.
-            List<Element> liste = events.getChildren();
-            for(Element event : liste) {
-                JSONObject j_event = new JSONObject();
-                j_event.put("id", event.getString("id"));
-                for (Object c : event.getContent()) {
-                    Element content = (Element) c;
-                    if (content.getName().equals("resources")) {
-                        for (Object r : content.getContent()) {
-                            Element resource = (Element) r;
-                            j_event.append("resources", resource.getInt("id"));
-                        }
-                    }
-                }
-                doc.append("events", j_event);
+            start = new GregorianCalendar().getTimeInMillis();
+            AdeClient ade = new AdeClient(config.getJSONObject("ade"));
+            JSONObject doc = ade.checkUpdates(getLastRun());
+            if (doc != null)
+            {
+                RabbitClient rabbit = new RabbitClient(config.getJSONObject("rabbitmq"));
+                rabbit.send(doc);
+                rabbit.close();
             }
-        } catch (RemoteException e) {
+            setLastRun();
+            logger.info("Successful check");
+        } catch (RemoteException | ProjectNotFoundException e) {
+            AdeClient.logger.error("Error with ADE");
             e.printStackTrace();
-        } catch (ProjectNotFoundException e) {
+        } catch (IOException e) {
+            logger.error("Error withs run log");
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            RabbitClient.logger.error("Error withs run log");
             e.printStackTrace();
         }
+    }
 
-        return doc;
+    private void setLastRun() throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter(getOutputFile());
+        pw.print("" + start);
+        pw.close();
+    }
+
+    private long getLastRun() throws IOException {
+        if (getLastRun != 0) return getLastRun;
+        String filePath = getOutputFile();
+        File f = new File(filePath);
+        GregorianCalendar gc = new GregorianCalendar();
+        if ((!f.exists()) || (!f.canRead())) {
+            // Arbitrary run last 72 hours changes
+            gc.add(GregorianCalendar.HOUR, -3);
+            logger.warn("No previous run found, will fetch updates since " +
+                    sdf.format(gc.getTime()));
+            getLastRun = gc.getTimeInMillis();
+            return getLastRun;
+        }
+        getLastRun = Long.parseLong(new String(Files.readAllBytes(Paths.get(filePath))));
+        gc.setTimeInMillis(getLastRun);
+        logger.info("Will fetch updates since " +
+                sdf.format(gc.getTime()));
+        return getLastRun;
+    }
+
+
+    private String getOutputFile() {
+        return config.getJSONObject("sync").getString("output_file");
     }
 
 
