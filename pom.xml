@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.unistra.dnum</groupId>
     <artifactId>ade-sync</artifactId>
-    <version>0.0.2</version>
+    <version>6.5.3c</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <resources>
