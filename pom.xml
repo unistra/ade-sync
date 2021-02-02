@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.unistra.dnum</groupId>
     <artifactId>ade-sync</artifactId>
-    <version>6.5.3c</version>
+    <version>6.8</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <resources>
@@ -90,27 +90,22 @@
         <dependency>
             <groupId>com.adesoft</groupId>
             <artifactId>ade</artifactId>
-            <version>6.5.3c</version>
+            <version>6.8.0</version>
         </dependency>
         <dependency>
             <groupId>com.adesoft</groupId>
             <artifactId>config</artifactId>
-            <version>6.5.3c</version>
+            <version>6.8.0</version>
         </dependency>
         <dependency>
             <groupId>com.adesoft</groupId>
             <artifactId>jdom</artifactId>
-            <version>6.5.3c</version>
+            <version>6.8.0</version>
         </dependency>
         <dependency>
             <groupId>com.adesoft</groupId>
             <artifactId>misc</artifactId>
-            <version>6.5.3c</version>
-        </dependency>
-        <dependency>
-            <groupId>com.adesoft</groupId>
-            <artifactId>stubs</artifactId>
-            <version>6.5.3c</version>
+            <version>6.8.0</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -131,6 +126,11 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mailapi</artifactId>
+            <version>1.4.3</version>
         </dependency>
     </dependencies>
     <properties>
